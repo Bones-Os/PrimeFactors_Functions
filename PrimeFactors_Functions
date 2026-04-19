@@ -1,0 +1,101 @@
+#lang scheme
+;;; CMSC 331 Spring 2025 Assignment 5
+;;; Prime Factors
+;;; File: assign5.ss
+;;; Name: Andrew Greenberg
+;;; Email: andrew82@umbc.edu
+
+;;; (PASS)
+;;; Input: Any number/type of arguments
+;;; Output: null
+;;;
+;;; This is a dummy function that returns null. The function stubs below call this
+;;; function so that the file can be run without generating errors. Replace each (PASS)
+;;; call in the stubs below with your code.
+(define (PASS . ARGS)
+  ;; This is a a dummy function that takes any number of arguments and
+  ;; always returns null. Do not modify this function.
+  null)
+
+;;; (prime-factors)
+;;; Input:  x - an integer greater than 1
+;;; Output: A list of the prime factors of x from smallest to largest
+;;;
+;;; This function takes an integer x of 2 or greater and returns a list containing all
+;;; of the prime factors of x. The output list is sorted from least to greatest.
+;;;
+;;; Example: (prime-factors 240) => (2 2 2 2 3 5)
+(define (prime-factors x)
+  (if (< x 2) (error "integer must be at least 2")
+      (prime-factors-helper x 2 null))
+  )
+
+;;; (prime-factors-helper)
+;;; Input: an integer greater than 1, the number to start dividing x by to get its factors, and
+;;; the current list of prime factors
+;;; Output: a list of the prime factors of x from smallest to largest
+(define (prime-factors-helper x currFactor lst)
+  (define quotient (/ x currFactor))
+  (cond
+    ((= x 1) (reverse lst)) ; base case. x being 1 means that it has been fully divided by its prime factors
+    ((integer? quotient) (prime-factors-helper quotient currFactor (cons currFactor lst))) ; if x can be divided by the current factor, then add it to the list of the recursive call
+    (else (prime-factors-helper x (+ currFactor 1) lst))) ; try the next factor, aka increment the factor by one
+  )
+
+;;; (element-count)
+;;; Input:  lst - a proper list containing any number and type of elements
+;;; Output: A list containing pairs of the form (e . c)
+;;;
+;;; This function takes a list lst containing any number and type of elements and returns
+;;; a list containing one pair for each unique element of the input lst. Each pair is of the
+;;; form (e . c), where e is an element of the input and c is the number of times e appears
+;;; in the input. The output list is sorted by the first appearance of e in lst. If the input
+;;; lst is empty, this function returns null.
+;;; Example: (element-count '(1 3 abc 1 (2) abc (2) 1)) => ((1 . 3) (3 . 1) (abc . 2) ((2) . 2))
+(define (element-count lst)
+  (if (equal? lst null) ; if list is empty, then just return an empty list, else call helper function
+      '()
+      (element-count-helper lst null (car lst) 0))
+  )
+
+;;; (element-count-helper)
+;;; Input: a list containing any number and type of elements, the list to return, the element to count, and the count of that element
+;;; Output: a list containing pairs of the form (e . c)
+(define (element-count-helper lst result target count)
+  (cond
+    ;; if lst is empty then add the last element-count pair to result and return it
+    ((equal? lst null) (reverse (cons (cons target count) result)))
+    ;; if there are no more of the target element in the lst, then add it and its count to result and continue with the next element
+    ((equal? (filter (lambda x (equal? (list target) x)) lst) null) (element-count-helper (filter (lambda x (not (equal? (list target) x))) lst) (cons (cons target count) result) (car (filter (lambda x (not (equal? (list target) x))) lst)) 0))
+    ;; else, count elements, add to result, then pass on lst without target to recursive call
+    (else (element-count-helper (filter (lambda x (not (equal? (list target) x))) lst) result target (length (filter (lambda x (equal? (list target) x)) lst)))))
+  )
+
+
+;;; (product-from-factors)
+;;; Input: lst - a list of pairs where each pair is of the form (factor . count)
+;;; Output: An integer that is the product of factors represented in lst
+;;;
+;;; This function takes a list of pairs where the car of each pair is a factor and the cdr is
+;;; the number of times that factor appears in a number. It returns the number represented
+;;; by the pairs in the list.
+;;;
+;;; Example: (product-from-factors '((2 . 4) (3 . 1) (5 . 1))) => 240
+(define (product-from-factors lst)
+  (if (equal? lst null) ; only call the helper function if passed a non-empty list
+      '()
+      (product-from-factors-helper lst 1))
+  )
+
+;;; (product-from-factors-helper)
+;;; Input: a list of the paris of numbers and their powers/degrees and the current product
+;;; Output: an integer product of the numbers raised to their powers
+(define (product-from-factors-helper lst product)
+  ;;car car to the cdr car
+  (if (equal? lst null)
+      product
+      (product-from-factors-helper (cdr lst) (* product (expt (car (car lst)) (cdr (car lst))))))
+  )
+
+
+(provide prime-factors element-count product-from-factors) ; Needed for the test file to work
